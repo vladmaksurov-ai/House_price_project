@@ -1,0 +1,30 @@
+# Local environments and IDE settings
+.venv/
+venv/
+.idea/
+.vscode/
+
+# Python caches and build outputs
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Local datasets
+data/*.csv
+
+# Generated model outputs
+artifacts/*
+!artifacts/.gitkeep
+submissions/*
+!submissions/.gitkeep
+
+# Local configuration and OS files
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
