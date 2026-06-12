@@ -12,27 +12,32 @@ from sklearn.model_selection import KFold, cross_val_score
 
 from house_price.config import SETTINGS, Settings
 from house_price.data import load_training_data
+from house_price.models import build_model
 from house_price.pipeline import build_pipeline
 
 
-def train(settings: Settings = SETTINGS) -> dict[str, object]:
+def train(
+    model_name: str = "hist_gradient_boosting",
+    settings: Settings = SETTINGS,
+) -> dict[str, object]:
     """Cross-validate, train on all rows, and persist reproducible artifacts."""
     X, y = load_training_data(settings.train_path, settings.target_column, settings.id_column)
-    model = build_pipeline(settings.id_column, settings.random_state, settings.model_params)
+    model = build_model(model_name, settings.random_state, settings.model_params)
+    pipeline = build_pipeline(settings.id_column, model)
     folds = KFold(n_splits=settings.cv_folds, shuffle=True, random_state=settings.random_state)
 
     scores = -cross_val_score(
-        model,
+        pipeline,
         X,
         y,
         cv=folds,
         scoring="neg_root_mean_squared_log_error",
         n_jobs=-1,
     )
-    model.fit(X, y)
+    pipeline.fit(X, y)
 
     settings.artifacts_dir.mkdir(parents=True, exist_ok=True)
-    joblib.dump(model, settings.model_path)
+    joblib.dump(pipeline, settings.model_path)
 
     report: dict[str, object] = {
         "created_at_utc": datetime.now(UTC).isoformat(),
@@ -42,7 +47,7 @@ def train(settings: Settings = SETTINGS) -> dict[str, object]:
         "cv_rmsle_scores": scores.tolist(),
         "cv_rmsle_mean": float(np.mean(scores)),
         "cv_rmsle_std": float(np.std(scores)),
-        "model": "HistGradientBoostingRegressor",
+        "model": model_name,
         "model_params": settings.model_params,
         "versions": {
             "python": platform.python_version(),
@@ -66,4 +71,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.ensemble import HistGradientBoostingRegressor
 
 from house_price.pipeline import build_pipeline
 
@@ -30,14 +31,17 @@ def test_pipeline_fits_and_predicts_on_small_sample() -> None:
     }
     X = pd.DataFrame([{**row, "Id": index} for index in range(1, 21)])
     y = pd.Series([150_000 + index * 1_000 for index in range(20)])
-    model = build_pipeline(
+    pipeline = build_pipeline(
         id_column="Id",
-        random_state=42,
-        model_params={"max_iter": 2, "min_samples_leaf": 2},
+        model=HistGradientBoostingRegressor(
+            random_state=42,
+            max_iter=2,
+            min_samples_leaf=2,
+        ),
     )
 
-    model.fit(X, y)
-    predictions = model.predict(X.head(3))
+    pipeline.fit(X, y)
+    predictions = pipeline.predict(X.head(3))
 
     assert len(predictions) == 3
     assert (predictions > 0).all()
