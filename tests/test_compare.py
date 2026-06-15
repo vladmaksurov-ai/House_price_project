@@ -1,10 +1,10 @@
-from pathlib import Path
+import json
 
 from house_price.compare import MODEL_NAMES, compare_models
 from house_price.config import Settings
 
 
-def test_compare_models_evaluates_all_models_with_identical_inputs(monkeypatch) -> None:
+def test_compare_models_evaluates_all_models_with_identical_inputs(tmp_path, monkeypatch) -> None:
     X = object()
     y = object()
     created_models = []
@@ -17,9 +17,9 @@ def test_compare_models_evaluates_all_models_with_identical_inputs(monkeypatch) 
         "xgboost": {"n_estimators": 2},
     }
     settings = Settings(
-        data_dir=Path("data"),
-        artifacts_dir=Path("artifacts"),
-        submissions_dir=Path("submissions"),
+        data_dir=tmp_path / "data",
+        artifacts_dir=tmp_path / "artifacts",
+        submissions_dir=tmp_path / "submissions",
         random_state=42,
         cv_folds=3,
         model_params=model_params,
@@ -54,3 +54,7 @@ def test_compare_models_evaluates_all_models_with_identical_inputs(monkeypatch) 
     ]
     assert len(evaluated_pipelines) == len(MODEL_NAMES)
     assert all(folds is received_folds[0] for folds in received_folds)
+
+    assert settings.comparison_report_path.exists()
+    saved_results = json.loads(settings.comparison_report_path.read_text(encoding="utf-8"))
+    assert saved_results == results

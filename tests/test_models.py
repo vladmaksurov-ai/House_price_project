@@ -23,6 +23,7 @@ def test_build_model_rejects_unknown_name() -> None:
     with pytest.raises(ValueError, match="Unknown model"):
         build_model("unknown", random_state=42, model_params={})
 
+
 def test_build_model_applies_parameters() -> None:
     model = build_model(
         "random_forest",

@@ -6,7 +6,8 @@ from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegresso
 from xgboost import XGBRegressor
 
 
-def build_model(name: str, random_state:str, model_params: Mapping[str, int | float]):
+def build_model(name: str, random_state: int, model_params: Mapping[str, int | float]):
+    """Create a configured regressor by its project name."""
     if name == "hist_gradient_boosting":
         return HistGradientBoostingRegressor(random_state=random_state, **model_params)
 

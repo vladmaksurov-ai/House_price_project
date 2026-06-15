@@ -17,6 +17,7 @@ class Settings:
     id_column: str = "Id"
     random_state: int = 42
     cv_folds: int = 5
+    default_model_name: str = "xgboost"
     model_params: dict[str, dict[str, int | float]] = field(
         default_factory=lambda: {
             "hist_gradient_boosting": {
@@ -28,13 +29,13 @@ class Settings:
             },
             "random_forest": {
                 "n_estimators": 300,
-                "n_jobs": -1,
+                "n_jobs": 1,
             },
             "xgboost": {
                 "n_estimators": 500,
                 "learning_rate": 0.05,
                 "max_depth": 3,
-                "n_jobs": -1,
+                "n_jobs": 1,
             },
         }
     )
@@ -58,6 +59,10 @@ class Settings:
     @property
     def submission_path(self) -> Path:
         return self.submissions_dir / "submission.csv"
+
+    @property
+    def comparison_report_path(self) -> Path:
+        return self.artifacts_dir / "model_comparison.json"
 
 
 SETTINGS = Settings()

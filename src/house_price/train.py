@@ -17,10 +17,11 @@ from house_price.pipeline import build_pipeline
 
 
 def train(
-    model_name: str = "hist_gradient_boosting",
+    model_name: str | None = None,
     settings: Settings = SETTINGS,
 ) -> dict[str, object]:
     """Cross-validate, train on all rows, and persist reproducible artifacts."""
+    model_name = model_name or settings.default_model_name
     X, y = load_training_data(settings.train_path, settings.target_column, settings.id_column)
     model = build_model(model_name, settings.random_state, settings.model_params[model_name])
     pipeline = build_pipeline(settings.id_column, model)
@@ -48,7 +49,7 @@ def train(
         "cv_rmsle_mean": float(np.mean(scores)),
         "cv_rmsle_std": float(np.std(scores)),
         "model": model_name,
-        "model_params": settings.model_params,
+        "model_params": settings.model_params[model_name],
         "versions": {
             "python": platform.python_version(),
             "pandas": pd.__version__,
@@ -63,7 +64,7 @@ def train(
 
 
 def main() -> None:
-    report = train("hist_gradient_boosting")
+    report = train()
     print(f"CV RMSLE: {report['cv_rmsle_mean']:.5f} +/- {report['cv_rmsle_std']:.5f}")
     print(f"Model saved to: {SETTINGS.model_path}")
     print(f"Report saved to: {SETTINGS.report_path}")

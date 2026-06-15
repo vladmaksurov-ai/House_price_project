@@ -67,16 +67,17 @@ def test_train_evaluates_fits_and_saves_complete_pipeline(tmp_path, monkeypatch)
                 "max_depth": 2,
                 "n_jobs": 1,
             },
-        }
+        },
     )
 
-    report = train(settings=settings)
+    report = train(model_name="hist_gradient_boosting", settings=settings)
     saved_pipeline = joblib.load(settings.model_path)
     predictions = saved_pipeline.predict(X.head(3))
 
     assert isinstance(evaluated_estimators[0], TransformedTargetRegressor)
     assert isinstance(saved_pipeline, TransformedTargetRegressor)
     assert report["model"] == "hist_gradient_boosting"
+    assert report["model_params"] == settings.model_params["hist_gradient_boosting"]
     assert report["cv_rmsle_scores"] == [0.12, 0.14]
     assert len(predictions) == 3
     assert (predictions > 0).all()

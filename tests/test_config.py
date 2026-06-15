@@ -7,3 +7,5 @@ def test_default_paths_are_relative_to_project_root() -> None:
     assert SETTINGS.test_path == PROJECT_DIR / "data" / "test.csv"
     assert SETTINGS.artifacts_dir == PROJECT_DIR / "artifacts"
     assert SETTINGS.submissions_dir == PROJECT_DIR / "submissions"
+    assert SETTINGS.default_model_name == "xgboost"
+    assert SETTINGS.comparison_report_path == PROJECT_DIR / "artifacts" / "model_comparison.json"

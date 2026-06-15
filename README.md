@@ -3,6 +3,10 @@
 Воспроизводимый ML-проект для соревнования Kaggle
 [House Prices: Advanced Regression Techniques](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques).
 
+Проект сравнивает несколько регрессионных моделей на одинаковых данных, преобразованиях,
+CV-разбиениях и метрике RMSLE. После выбора модели полный pipeline обучается на всех
+доступных данных и сохраняется для создания submission.
+
 ## Быстрый запуск
 
 Из корня проекта:
@@ -11,25 +15,29 @@
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+
+python -m house_price.compare
 python -m house_price.train
 python -m house_price.predict
+
 python -m pytest
+python -m ruff check .
 ```
 
-## Установка зависимостей
+Команды создают локальные файлы:
 
-Все библиотеки проекта перечислены в одном файле `requirements.txt`. Для установки
-выполните:
-
-```powershell
-python -m pip install -r requirements.txt
+```text
+artifacts/model_comparison.json
+artifacts/model.joblib
+artifacts/training_report.json
+submissions/submission.csv
 ```
 
-Флаг `-r` говорит `pip` прочитать список библиотек из указанного файла. Папка
-`src` настроена как источник Python-кода, поэтому пакет `house_price` доступен
-в PyCharm и при запуске тестов без добавления локального пути в `requirements.txt`.
+Они исключены из Git.
 
-Исходные файлы должны находиться по путям:
+## Данные
+
+Исходные данные Kaggle должны находиться здесь:
 
 ```text
 data/train.csv
@@ -37,33 +45,52 @@ data/test.csv
 data/sample_submission.csv
 ```
 
-CSV-файлы исключены из Git, потому что это локальные исходные данные. Пути и параметры
-проекта задаются централизованно в `src/house_price/config.py`.
+CSV-файлы также исключены из Git.
 
-## Структура
+## Сравниваемые модели
+
+- `HistGradientBoostingRegressor`
+- `RandomForestRegressor`
+- `XGBRegressor`
+
+`python -m house_price.compare` оценивает все модели на одних и тех же пяти
+воспроизводимых KFold-разбиениях. Для каждой модели сохраняются оценки фолдов,
+средний RMSLE, стандартное отклонение и время оценки.
+
+Параметры моделей находятся в `src/house_price/config.py`. Текущие значения являются
+разумными стартовыми конфигурациями, а не доказанно лучшими гиперпараметрами.
+
+Результаты текущего воспроизводимого сравнения:
+
+| Модель | CV RMSLE mean | CV RMSLE std |
+|---|---:|---:|
+| HistGradientBoosting | 0.13398 | 0.01796 |
+| Random Forest | 0.14194 | 0.01846 |
+| XGBoost | **0.12947** | **0.01702** |
+
+XGBoost выбран текущей моделью по умолчанию. Следующий отдельный эксперимент может
+быть посвящён настройке его гиперпараметров без изменения протокола оценки.
+
+## Архитектура
 
 ```text
-House_price_project/
-├── baseline/           # исследовательский notebook
-├── data/               # локальные данные Kaggle
-├── src/house_price/    # пакет обучения и предсказания
-├── tests/              # автоматические тесты
-├── artifacts/          # модель и отчет обучения
-├── submissions/        # предсказания для Kaggle
-├── .github/workflows/  # CI-проверки
-├── pyproject.toml      # описание пакета и настройки инструментов
-└── requirements.txt    # все библиотеки проекта
+src/house_price/
+├── config.py       # пути и параметры моделей
+├── data.py         # загрузка и проверка данных
+├── features.py     # предметные признаки
+├── models.py       # фабрика моделей
+├── pipeline.py     # общий preprocessing и модель
+├── evaluation.py   # единая CV-оценка
+├── compare.py      # сравнение моделей
+├── train.py        # обучение и сохранение финального pipeline
+└── predict.py      # создание submission
 ```
 
-## Как устроен pipeline
+Pipeline объединяет feature engineering, удаление `Id`, заполнение пропусков,
+масштабирование числовых признаков, one-hot кодирование категорий и выбранную модель.
+При обучении и предсказании используется один и тот же сохранённый pipeline.
 
-1. `load_training_data()` читает данные и проверяет обязательные колонки.
-2. `HouseFeatureEngineer` создает предметные признаки одинаково для train и test.
-3. `build_pipeline()` объединяет feature engineering, заполнение пропусков, кодирование
-   категорий и модель `HistGradientBoostingRegressor`.
-4. Обучение оценивается по RMSLE с воспроизводимой кросс-валидацией.
-5. Финальная модель и отчет сохраняются в `artifacts/`.
-6. `python -m house_price.predict` создает `submissions/submission.csv`.
+## Git
 
-Служебные каталоги (`.venv`, кэши, настройки IDE, артефакты и submissions) не попадают
-в Git. Пустые каталоги для результатов сохраняются с помощью `.gitkeep`.
+В Git не добавляются `.venv`, настройки IDE, CSV, кэши, обученные модели и submissions.
+Код проверяется тестами и Ruff локально и через GitHub Actions.
