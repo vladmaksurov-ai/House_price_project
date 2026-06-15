@@ -17,13 +17,25 @@ class Settings:
     id_column: str = "Id"
     random_state: int = 42
     cv_folds: int = 5
-    model_params: dict[str, int | float] = field(
+    model_params: dict[str, dict[str, int | float]] = field(
         default_factory=lambda: {
-            "learning_rate": 0.05,
-            "max_iter": 500,
-            "max_leaf_nodes": 31,
-            "l2_regularization": 1.0,
-            "min_samples_leaf": 20,
+            "hist_gradient_boosting": {
+                "learning_rate": 0.05,
+                "max_iter": 500,
+                "max_leaf_nodes": 31,
+                "l2_regularization": 1.0,
+                "min_samples_leaf": 20,
+            },
+            "random_forest": {
+                "n_estimators": 300,
+                "n_jobs": -1,
+            },
+            "xgboost": {
+                "n_estimators": 500,
+                "learning_rate": 0.05,
+                "max_depth": 3,
+                "n_jobs": -1,
+            },
         }
     )
 

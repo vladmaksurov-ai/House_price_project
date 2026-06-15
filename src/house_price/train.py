@@ -22,7 +22,7 @@ def train(
 ) -> dict[str, object]:
     """Cross-validate, train on all rows, and persist reproducible artifacts."""
     X, y = load_training_data(settings.train_path, settings.target_column, settings.id_column)
-    model = build_model(model_name, settings.random_state, settings.model_params)
+    model = build_model(model_name, settings.random_state, settings.model_params[model_name])
     pipeline = build_pipeline(settings.id_column, model)
     folds = KFold(n_splits=settings.cv_folds, shuffle=True, random_state=settings.random_state)
 
@@ -63,7 +63,7 @@ def train(
 
 
 def main() -> None:
-    report = train()
+    report = train("hist_gradient_boosting")
     print(f"CV RMSLE: {report['cv_rmsle_mean']:.5f} +/- {report['cv_rmsle_std']:.5f}")
     print(f"Model saved to: {SETTINGS.model_path}")
     print(f"Report saved to: {SETTINGS.report_path}")

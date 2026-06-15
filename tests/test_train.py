@@ -53,7 +53,21 @@ def test_train_evaluates_fits_and_saves_complete_pipeline(tmp_path, monkeypatch)
         artifacts_dir=tmp_path / "artifacts",
         submissions_dir=tmp_path / "submissions",
         cv_folds=2,
-        model_params={"max_iter": 2, "min_samples_leaf": 2},
+        model_params={
+            "hist_gradient_boosting": {
+                "max_iter": 2,
+                "min_samples_leaf": 2,
+            },
+            "random_forest": {
+                "n_estimators": 2,
+                "n_jobs": 1,
+            },
+            "xgboost": {
+                "n_estimators": 2,
+                "max_depth": 2,
+                "n_jobs": 1,
+            },
+        }
     )
 
     report = train(settings=settings)
