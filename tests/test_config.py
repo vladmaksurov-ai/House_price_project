@@ -9,3 +9,7 @@ def test_default_paths_are_relative_to_project_root() -> None:
     assert SETTINGS.submissions_dir == PROJECT_DIR / "submissions"
     assert SETTINGS.default_model_name == "xgboost"
     assert SETTINGS.comparison_report_path == PROJECT_DIR / "artifacts" / "model_comparison.json"
+
+
+def test_default_model_parameters_are_direct_estimator_parameters() -> None:
+    assert all("__" not in name for name in SETTINGS.model_params[SETTINGS.default_model_name])

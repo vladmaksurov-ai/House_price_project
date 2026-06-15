@@ -32,9 +32,14 @@ class Settings:
                 "n_jobs": 1,
             },
             "xgboost": {
-                "n_estimators": 500,
-                "learning_rate": 0.05,
-                "max_depth": 3,
+                "subsample": 1.0,
+                "reg_lambda": 1,
+                "reg_alpha": 1,
+                "n_estimators": 800,
+                "min_child_weight": 3,
+                "max_depth": 2,
+                "learning_rate": 0.1,
+                "colsample_bytree": 0.7,
                 "n_jobs": 1,
             },
         }
